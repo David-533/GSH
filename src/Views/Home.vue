@@ -8,7 +8,7 @@
       <!-- Liens de navigation -->
       <div class="nav-links">
         <router-link to="/home" class="nav-item">Accueil</router-link>
-        <router-link to="/profil" class="nav-item">Profil</router-link>
+        <router-link to="/profil" class="nav-item">Profile</router-link>
         <router-link to="/messages" class="nav-item">Messages</router-link>
 
       </div>
