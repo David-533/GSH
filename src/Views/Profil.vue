@@ -104,7 +104,8 @@ export default {
     const router = useRouter();
 
     const userPseudo = ref(localStorage.getItem("userPseudo") || "");
-    const userPhoto = ref(localStorage.getItem("userPhoto") || "");
+    const userPhoto = ref(localStorage.getItem("userPhoto") || null);
+    
     const userBio = ref(localStorage.getItem("userBio") || "");
     const fileInput = ref(null);
     const postInput = ref(null);
@@ -273,6 +274,7 @@ const deletePost = (index) => {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
+  border: solid black 2px;
 }
 
 .stats { margin: 10px 0; }
