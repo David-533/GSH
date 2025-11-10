@@ -49,15 +49,22 @@ export default {
         alert(`Bienvenue ${pseudo.value} !`);
 
       // ✅ Stocke toutes les infos du profil pour Profil.vue
-localStorage.setItem("userPseudo", storedUser.pseudo);
-// Ne pas écraser la photo si elle existe déjà
-if (!localStorage.getItem("userPhoto")) {
-  localStorage.setItem("userPhoto", storedUser.photo || "");
-}
-// ⚠️ Ne pas écraser la bio si elle existe déjà (l'utilisateur a peut-être modifié son profil)
-if (!localStorage.getItem("userBio")) {
-  localStorage.setItem("userBio", storedUser.bio || "");
-}
+      localStorage.setItem("userPseudo", storedUser.pseudo);
+      
+      // Ne pas écraser la photo si elle existe déjà
+       if (!localStorage.getItem("userPhoto")) {
+       localStorage.setItem("userPhoto", storedUser.photo || "");
+      }
+      
+      // ⚠️ Ne pas écraser le pseudo si existe déjà (l'utilisateur a peut-être modifié son profil)
+       if (!localStorage.getItem("userPseudo")) {
+       localStorage.setItem("userPseudo", storedUser.pseudo || "");
+      }
+      
+      // ⚠️ Ne pas écraser la bio si elle existe déjà (l'utilisateur a peut-être modifié son profil)
+       if (!localStorage.getItem("userBio")) {
+       localStorage.setItem("userBio", storedUser.bio || "");
+      }
 
 
 
@@ -185,5 +192,8 @@ button:hover {
   transform: scale(1.05);
 }
 </style>
+
+
+
 
 
