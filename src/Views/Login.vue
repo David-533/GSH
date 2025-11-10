@@ -54,7 +54,11 @@ localStorage.setItem("userPseudo", storedUser.pseudo);
 if (!localStorage.getItem("userPhoto")) {
   localStorage.setItem("userPhoto", storedUser.photo || "");
 }
-localStorage.setItem("userBio", storedUser.bio || "");
+// ⚠️ Ne pas écraser la bio si elle existe déjà (l'utilisateur a peut-être modifié son profil)
+if (!localStorage.getItem("userBio")) {
+  localStorage.setItem("userBio", storedUser.bio || "");
+}
+
 
 
         router.push("/home");
