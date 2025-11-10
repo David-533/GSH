@@ -17,17 +17,31 @@
 
     <!-- Contenu -->
     <div class="content">
+      <!-- Profile header -->
       <div class="profile-header">
         <img class="profile-pic" :src="userPhoto || defaultPhoto" alt="">
         <div class="user-info">
           <h1>{{ userPseudo || "Pseudo" }}</h1>
-          <div class="stats">
-            <div><strong>{{ posts.length }}</strong> Publications</div>
-          </div>
-          <p>{{ userBio || 'Aucune bio renseignée pour le moment.' }}</p>
+     <div class="stats">
+  <div class="stat-item">
+    <strong>{{ posts.length }}</strong>
+    <span>Publications</span>
+  </div>
+  <div class="stat-item">
+    <strong>{{ followers }}</strong>
+    <span>Abonnés</span>
+  </div>
+  <div class="stat-item">
+    <strong>{{ following }}</strong>
+    <span>Suivis</span>
+  </div>
+</div>
 
-          <button class="edit-btn" @click="triggerFileInput">Modifier le profil</button>
-          <input type="file" ref="fileInput" accept="image/*" @change="handleFileChange" style="display: none;">
+         <p class="user-bio">{{ userBio || 'Aucune bio renseignée pour le moment.' }}</p>
+
+
+          <!-- Bouton modifié pour aller sur la page ModifierProfil.vue -->
+          <button class="edit-btn" @click="goToModifierProfil">Modifier le profil</button>
         </div>
       </div>
 
@@ -48,50 +62,55 @@
       <button class="add-post-btn" @click="triggerPostInput">+</button>
     </div>
 
-   <!-- Modal -->
-<div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
-  <div class="modal-content">
-    <div class="modal-left">
-      <img :src="posts[modalIndex]" class="modal-image" />
-    </div>
-    <div class="modal-right">
-      <div class="comments-header">
-        <h3>Commentaires</h3>
-        <!-- Menu à trois points -->
-        <div class="menu-container" @click.stop="toggleMenu">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24">
-            <circle cx="12" cy="5" r="2"/>
-            <circle cx="12" cy="12" r="2"/>
-            <circle cx="12" cy="19" r="2"/>
-          </svg>
-          <div v-if="menuOpen" class="dropdown-menu">
-            <div class="dropdown-item" @click="deletePost(modalIndex)">Supprimer la photo</div>
+    <!-- Modal -->
+    <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <div class="modal-left">
+          <img :src="posts[modalIndex]" class="modal-image" />
+        </div>
+        <div class="modal-right">
+          <div class="comments-header">
+            <h3>Commentaires</h3>
+          </div>
+
+          <div class="comments-list">
+            <div v-for="(comment, idx) in comments[modalIndex] || []" :key="idx" class="comment">
+              <div class="comment-top">
+                <img class="comment-avatar" :src="userPhoto || defaultPhoto" />
+                <strong class="comment-pseudo">{{ userPseudo || 'Pseudo' }}</strong>
+              </div>
+              <div class="comment-text">{{ comment }}</div>
+            </div>
+          </div>
+
+          <div class="add-comment">
+            <textarea v-model="newComment" placeholder="Ajouter un commentaire..."></textarea>
+            <button @click="addComment(modalIndex)" class="send-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" class="send-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10l9-9m0 0l9 9m-9-9v18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="post-actions">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor" 
+              class="icon heart" 
+              :class="{ liked: isLiked }"
+              @click="toggleLike"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" 
+              />
+            </svg>
           </div>
         </div>
-      </div>
-
-      <div class="comments-list">
-        <div v-for="(comment, idx) in comments[modalIndex] || []" :key="idx" class="comment">
-          <div class="comment-top">
-            <img class="comment-avatar" :src="userPhoto || defaultPhoto" />
-            <strong class="comment-pseudo">{{ userPseudo || 'Pseudo' }}</strong>
-          </div>
-          <div class="comment-text">{{ comment }}</div>
-        </div>
-      </div>
-
-      <div class="add-comment">
-        <input v-model="newComment" placeholder="Ajouter un commentaire..." />
-        <button @click="addComment(modalIndex)" class="send-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" class="send-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10l9-9m0 0l9 9m-9-9v18"/>
-          </svg>
-        </button>
       </div>
     </div>
   </div>
-</div>
-</div>
 </template>
 
 <script>
@@ -105,11 +124,13 @@ export default {
 
     const userPseudo = ref(localStorage.getItem("userPseudo") || "");
     const userPhoto = ref(localStorage.getItem("userPhoto") || null);
-    
     const userBio = ref(localStorage.getItem("userBio") || "");
-    const fileInput = ref(null);
+    const userGender = ref(localStorage.getItem("userGender") || "");
     const postInput = ref(null);
     const defaultPhoto = "https://via.placeholder.com/150";
+    const followers = ref(parseInt(localStorage.getItem("userFollowers") || "0"));
+    const following = ref(parseInt(localStorage.getItem("userFollowing") || "0"));
+
 
     const posts = ref([]);
     const comments = ref([]);
@@ -117,37 +138,32 @@ export default {
 
     const modalOpen = ref(false);
     const modalIndex = ref(0);
+    const isLiked = ref(false);
 
-    // Charger les publications depuis localStorage
     onMounted(() => {
-      const savedPosts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-      posts.value = savedPosts;
+      posts.value = JSON.parse(localStorage.getItem("userPosts") || "[]");
+      comments.value = JSON.parse(localStorage.getItem("userComments") || "[]");
+      isLiked.value = JSON.parse(localStorage.getItem("isLiked") || "false");
     });
 
-    // ⚡ Modification : ne supprime pas l'avatar
-    const handleLogout = () => {
-      ["userPseudo", "userBio"].forEach(key => localStorage.removeItem(key));
-      router.push("/login");
-    };
+  const handleLogout = () => {
+  // Sauvegarde les infos avant de supprimer la session
+  localStorage.setItem("userBio", userBio.value);
+ 
+  // Supprime seulement les infos de session
+  ["sessionToken", "isLoggedIn"].forEach(key => localStorage.removeItem(key));
 
-    const triggerFileInput = () => fileInput.value.click();
-    const handleFileChange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        userPhoto.value = reader.result;
-        localStorage.setItem("userPhoto", reader.result);
-      };
-      reader.readAsDataURL(file);
+  router.push("/login");
+};
+    // Nouvelle fonction pour aller sur la page ModifierProfil.vue
+    const goToModifierProfil = () => {
+      router.push("/modifier-profil");
     };
 
     const triggerPostInput = () => postInput.value.click();
-    const handlePostFileChange = (e) => {
+    const handlePostFileChange = e => {
       const file = e.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = () => {
         posts.value.push(reader.result);
@@ -156,42 +172,39 @@ export default {
       reader.readAsDataURL(file);
     };
 
-    const openModal = (index) => {
+    const openModal = index => {
       modalIndex.value = index;
       modalOpen.value = true;
     };
+
     const closeModal = () => modalOpen.value = false;
 
-    const addComment = (index) => {
+    const addComment = index => {
       if (!newComment.value.trim()) return;
       if (!comments.value[index]) comments.value[index] = [];
       comments.value[index].push(newComment.value);
       newComment.value = "";
+      localStorage.setItem("userComments", JSON.stringify(comments.value));
     };
-    const menuOpen = ref(false);
 
-const toggleMenu = () => {
-  menuOpen.value = !menuOpen.value;
-};
-
-const deletePost = (index) => {
-  posts.value.splice(index, 1);
-  localStorage.setItem("userPosts", JSON.stringify(posts.value));
-  closeModal();
-};
-
+    const toggleLike = () => {
+      isLiked.value = !isLiked.value;
+      localStorage.setItem("isLiked", JSON.stringify(isLiked.value));
+    };
 
     return {
       userPseudo, userPhoto, userBio, defaultPhoto,
-      fileInput, postInput, posts, comments, newComment,
+      postInput, posts, comments, newComment,
       modalOpen, modalIndex,
-      handleFileChange, handleLogout, triggerFileInput,
-      triggerPostInput, handlePostFileChange, openModal,
-      closeModal, addComment,
+      handleLogout, triggerPostInput, handlePostFileChange,
+      openModal, closeModal, addComment, isLiked, toggleLike,
+      goToModifierProfil, followers, following
     };
   }
 };
 </script>
+
+
 
 
 <style scoped>
@@ -276,15 +289,50 @@ const deletePost = (index) => {
   object-fit: cover;
   border: solid black 2px;
 }
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* ✅ Espace horizontal entre chaque bloc */
+  margin-top: 15px;
+}
 
-.stats { margin: 10px 0; }
+.stat-item {
+  text-align: center;
+  min-width: 80px; /* ✅ Garde chaque élément bien espacé même sur petits écrans */
+}
+
+.stat-item strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px; /* ✅ Petit espace entre le chiffre et le texte */
+}
+
+.stat-item span {
+  font-size: 14px;
+  color: black;
+}
+
+
 
 .edit-btn {
   padding: 8px 16px;
   border: 1px solid #ccc;
   background: #fff;
   border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease; /* transition douce */
 }
+
+.edit-btn:hover {
+  background-color: #f0f0f0; /* léger hover */
+}
+
+.edit-btn:active {
+  transform: scale(0.95); /* effet “pression” */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); /* légère ombre intérieure */
+}
+
 
 /* Underline + posts */
 .underline-wrapper {
@@ -310,15 +358,45 @@ const deletePost = (index) => {
 }
 
 .post-container {
+  position: relative;
   width: 260px;
+  height: 260px;
+  overflow: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  background: none; /* retire tout fond inutile */
+  border: none; /* enlève toute bordure résiduelle */
+  padding: 0;
+  margin: 0;
 }
 
 .post-image {
   width: 100%;
-  aspect-ratio: 1/1;
+  height: 100%;
   object-fit: cover;
+  display: block; /* élimine les petits espaces sous l’image */
+  border: none;
   border-radius: 6px;
 }
+
+/* Overlay sombre */
+.post-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.3s ease;
+  border-radius: 6px;
+  pointer-events: none; /* pour ne pas bloquer le clic */
+}
+
+.post-container:hover::after {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
 
 /* + button */
 .add-post-container {
@@ -353,16 +431,17 @@ const deletePost = (index) => {
 
 .modal-content {
   display: flex;
-  width: 70vw;
-  max-width: 1000px;
-  height: 80vh;
+  width: 85vw;           /* largeur totale augmentée */
+  max-width: 1300px;     /* plus grand sur grands écrans */
+  height: 85vh;          /* plus haut */
   background-color: #fff;
   border-radius: 6px;
   overflow: hidden;
 }
 
+/* L’image prend plus d’espace (≈ 70%) */
 .modal-left {
-  flex: 0 0 50%;
+  flex: 0 0 70%;
   background-color: black;
   display: flex;
   justify-content: center;
@@ -371,20 +450,21 @@ const deletePost = (index) => {
 }
 
 .modal-image {
-  width: auto;
-  height: 100%;       /* pleine hauteur du modal */
-  object-fit: cover;   /* conserve le style actuel */
-  image-rendering: auto; /* force le navigateur à ne pas faire de "smoothing" inutile */
-  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0; /* supprime le léger arrondi qui pouvait créer un espace */
 }
 
+/* La colonne de commentaires est plus étroite (≈ 30%) */
 .modal-right {
-  flex: 0 0 50%; /* commentaires prennent 50% */
+  flex: 0 0 30%;
   background-color: #fff;
   display: flex;
   flex-direction: column;
   padding: 15px;
 }
+
 
 
 .comments-header {
@@ -429,43 +509,53 @@ const deletePost = (index) => {
 .add-comment {
   display: flex;
   align-items: center;
-  justify-content: center; /* centre horizontalement */
+  justify-content: space-between;
   width: 100%;
-  padding-top: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid #ddd; /* fine séparation */
+  background-color: #fff;      /* fond blanc net */
+  position: sticky;
+  bottom: 0;
   box-sizing: border-box;
 }
 
-.add-comment input {
-  flex: none;
-  width: 85%; /* ajuste ici (80–90%) selon ton goût */
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  box-sizing: border-box;
-  font-size: 0.8rem;
+/* Champ de saisie type barre */
+.add-comment textarea {
+  flex: 1;
+  border: none;
   outline: none;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  background: none;
+  border-radius: 0;
+  font-family: 'Roboto', sans-serif; /* <-- même police que le reste */
+  resize: none;       /* empêche le redimensionnement */
+  overflow-y: auto;   /* permet le scroll vertical si le texte est trop long */
+  min-height: 24px;   /* hauteur minimale */
+  max-height: 80px;   /* limite la hauteur pour garder l'UI propre */
 }
 
-.add-comment input:focus {
-  border-color: #000;
+
+/* Supprime complètement la bulle arrondie */
+.add-comment input {
+  border-radius: 0;
 }
 
+/* Bouton envoyer simple */
 .send-btn {
   background: none;
   border: none;
   cursor: pointer;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px; /* petit espace pour respirer */
-  padding: 4px;
-  border-radius: 50%;
-  flex-shrink: 0;
+  margin-top: 10px;
 }
 
 .send-icon {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   color: #000;
 }
 
@@ -479,31 +569,43 @@ const deletePost = (index) => {
   position: relative;
 }
 
-.menu-container {
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-top: 1px solid #ddd;
+  background-color: #fff;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: #000;
   cursor: pointer;
-  position: relative;
+  transition: transform 0.2s ease;
 }
 
-.dropdown-menu {
-  position: absolute;
-  top: 25px;
-  right: 0;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  min-width: 150px;
-  z-index: 10;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+.icon:hover {
+  transform: scale(1.1);
 }
 
-.dropdown-item {
-  padding: 8px 12px;
-  cursor: pointer;
+.heart {
+  stroke: #000;
+  fill: transparent;
+  transition: all 0.3s ease;
 }
 
-.dropdown-item:hover {
-  background-color: #f0f0f0;
+.heart.liked {
+  stroke: #e0245e; /* rouge Instagram */
+  fill: #e0245e;
+  transform: scale(1.15);
+}
+
+.user-bio {
+  white-space: pre-line; /* garde les sauts de ligne de la bio */
 }
 
 
 </style>
+
