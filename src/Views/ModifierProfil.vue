@@ -22,8 +22,11 @@
       <option value="autre">Autre</option>
     </select>
 
-    <!-- Bouton enregistrer -->
-    <button @click="saveProfile">Enregistrer</button>
+    <!-- Boutons -->
+    <div class="btn-container">
+      <button class="save-btn" @click="saveProfile">Enregistrer</button>
+      <button class="back-btn" @click="goBack">Retour</button>
+    </div>
   </div>
 </template>
 
@@ -39,16 +42,15 @@ export default {
     const userPseudo = ref("");
     const userPhoto = ref(null);
     const userBio = ref("");
-    const gender = ref(""); // maintenant sauvegardé
+    const gender = ref("");
     const fileInput = ref(null);
     const defaultPhoto = "https://via.placeholder.com/150";
 
     onMounted(() => {
-      // Charger les infos depuis le localStorage
       userPseudo.value = localStorage.getItem("userPseudo") || "";
       userPhoto.value = localStorage.getItem("userPhoto") || null;
       userBio.value = localStorage.getItem("userBio") || "";
-      gender.value = localStorage.getItem("userGender") || ""; // récupération du genre
+      gender.value = localStorage.getItem("userGender") || "";
     });
 
     const triggerFileInput = () => fileInput.value.click();
@@ -64,17 +66,22 @@ export default {
     };
 
     const saveProfile = () => {
-      // Sauvegarde toutes les infos
       localStorage.setItem("userPseudo", userPseudo.value);
       localStorage.setItem("userPhoto", userPhoto.value);
       localStorage.setItem("userBio", userBio.value);
-      localStorage.setItem("userGender", gender.value); // sauvegarde du genre
-      router.push("/profil"); // retour vers la page profil
+      localStorage.setItem("userGender", gender.value);
+      router.push("/profil");
+    };
+
+    const goBack = () => {
+      router.push("/profil");
     };
 
     return {
-      userPseudo, userPhoto, userBio, gender, defaultPhoto, fileInput,
-      triggerFileInput, handleFileChange, saveProfile
+      userPseudo, userPhoto, userBio, gender,
+      defaultPhoto, fileInput,
+      triggerFileInput, handleFileChange,
+      saveProfile, goBack
     };
   }
 };
@@ -94,14 +101,14 @@ export default {
   font-family: 'Roboto', sans-serif;
 }
 
-.modifier-page h1 {
+h1 {
   text-align: center;
   font-size: 1.8rem;
   color: #333;
   margin-bottom: 20px;
 }
 
-.modifier-page img {
+img {
   width: 120px;
   height: 120px;
   border-radius: 50%;
@@ -111,14 +118,14 @@ export default {
   cursor: pointer;
 }
 
-.modifier-page label {
+label {
   font-weight: bold;
   color: #555;
 }
 
-.modifier-page input[type="text"],
-.modifier-page textarea,
-.modifier-page select {
+input[type="text"],
+textarea,
+select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ccc;
@@ -129,12 +136,19 @@ export default {
   box-sizing: border-box;
 }
 
-.modifier-page textarea {
+textarea {
   min-height: 60px;
   max-height: 120px;
 }
 
-.modifier-page button {
+.btn-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.save-btn {
+  flex: 1;
   background-color: #0095f6;
   color: white;
   border: none;
@@ -145,8 +159,24 @@ export default {
   transition: background 0.2s ease;
 }
 
-.modifier-page button:hover {
+.save-btn:hover {
   background-color: #007ac1;
+}
+
+.back-btn {
+  flex: 1;
+  background-color: #eee;
+  color: #333;
+  border: none;
+  padding: 10px 0;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.back-btn:hover {
+  background-color: #ddd;
 }
 
 /* Responsive */
@@ -156,9 +186,14 @@ export default {
     padding: 15px;
   }
 
-  .modifier-page img {
+  img {
     width: 100px;
     height: 100px;
   }
+
+  .btn-container {
+    flex-direction: column;
+  }
 }
 </style>
+
