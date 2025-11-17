@@ -30,12 +30,12 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/userStore";
+
 
 export default {
   setup() {
     const router = useRouter();
-    const userStore = useUserStore();
+
 
     const pseudo = ref("");
     const email = ref("");
