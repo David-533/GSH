@@ -9,7 +9,7 @@
         <router-link to="/messages" class="nav-item">Messages</router-link>
       </div>
       <button class="logout-btn" @click="handleLogout">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
           <path d="M10 17v-3H3v-4h7V7l5 5-5 5zM20 3h-8v2h8v14h-8v2h8c1.1 0 2-0.9 2-2V5c0-1.1-0.9-2-2-2z"/>
         </svg>
       </button>
@@ -22,25 +22,21 @@
         <img class="profile-pic" :src="userPhoto || defaultPhoto" alt="">
         <div class="user-info">
           <h1>{{ userPseudo || "Pseudo" }}</h1>
-     <div class="stats">
-  <div class="stat-item">
-    <strong>{{ posts.length }}</strong>
-    <span>Publications</span>
-  </div>
-  <div class="stat-item">
-    <strong>{{ followers }}</strong>
-    <span>Abonnés</span>
-  </div>
-  <div class="stat-item">
-    <strong>{{ following }}</strong>
-    <span>Suivis</span>
-  </div>
-</div>
-
-         <p class="user-bio">{{ userBio || 'Aucune bio renseignée pour le moment.' }}</p>
-
-
-          <!-- Bouton modifié pour aller sur la page ModifierProfil.vue -->
+          <div class="stats">
+            <div class="stat-item">
+              <strong>{{ posts.length }}</strong>
+              <span>Publications</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ followers }}</strong>
+              <span>Abonnés</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ following }}</strong>
+              <span>Suivis</span>
+            </div>
+          </div>
+          <p class="user-bio">{{ userBio || 'Aucune bio renseignée pour le moment.' }}</p>
           <button class="edit-btn" @click="goToModifierProfil">Modifier le profil</button>
         </div>
       </div>
@@ -71,6 +67,19 @@
         <div class="modal-right">
           <div class="comments-header">
             <h3>Commentaires</h3>
+
+            <!-- Bouton 3 points -->
+            <button class="menu-btn" @click="toggleOptionsMenu">
+              <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h.01M12 12h.01M18 12h.01"/>
+              </svg>
+            </button>
+
+            <!-- Menu déroulant -->
+            <div v-if="optionsMenuOpen" class="options-menu">
+              <button @click="deletePost(modalIndex)" class="menu-item delete">Supprimer</button>
+              <button @click="closeOptionsMenu" class="menu-item cancel">Annuler</button>
+            </div>
           </div>
 
           <div class="comments-list">
@@ -93,18 +102,10 @@
           </div>
 
           <div class="post-actions">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor" 
-              class="icon heart" 
-              :class="{ liked: isLiked }"
-              @click="toggleLike"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              class="icon heart" :class="{ liked: isLiked }" @click="toggleLike">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" 
-              />
+                d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
             </svg>
           </div>
         </div>
@@ -131,7 +132,6 @@ export default {
     const followers = ref(parseInt(localStorage.getItem("userFollowers") || "0"));
     const following = ref(parseInt(localStorage.getItem("userFollowing") || "0"));
 
-
     const posts = ref([]);
     const comments = ref([]);
     const newComment = ref("");
@@ -139,6 +139,7 @@ export default {
     const modalOpen = ref(false);
     const modalIndex = ref(0);
     const isLiked = ref(false);
+    const optionsMenuOpen = ref(false);
 
     onMounted(() => {
       posts.value = JSON.parse(localStorage.getItem("userPosts") || "[]");
@@ -146,21 +147,20 @@ export default {
       isLiked.value = JSON.parse(localStorage.getItem("isLiked") || "false");
     });
 
-  const handleLogout = () => {
-  // Sauvegarde les infos avant de supprimer la session
-  localStorage.setItem("userBio", userBio.value);
- 
-  // Supprime seulement les infos de session
-  ["sessionToken", "isLoggedIn"].forEach(key => localStorage.removeItem(key));
+    const handleLogout = () => {
+      localStorage.setItem("userPseudo", userPseudo.value);
+      localStorage.setItem("userBio", userBio.value);
+      localStorage.setItem("userPhoto", userPhoto.value);
+      localStorage.removeItem("authToken");
+      router.push("/login");
+    };
 
-  router.push("/login");
-};
-    // Nouvelle fonction pour aller sur la page ModifierProfil.vue
     const goToModifierProfil = () => {
       router.push("/modifier-profil");
     };
 
     const triggerPostInput = () => postInput.value.click();
+
     const handlePostFileChange = e => {
       const file = e.target.files[0];
       if (!file) return;
@@ -179,6 +179,23 @@ export default {
 
     const closeModal = () => modalOpen.value = false;
 
+    const toggleOptionsMenu = () => {
+      optionsMenuOpen.value = !optionsMenuOpen.value;
+    };
+
+    const closeOptionsMenu = () => {
+      optionsMenuOpen.value = false;
+    };
+
+    const deletePost = (index) => {
+      if (confirm("Voulez-vous vraiment supprimer cette publication ?")) {
+        posts.value.splice(index, 1);
+        localStorage.setItem("userPosts", JSON.stringify(posts.value));
+        closeModal();
+      }
+      closeOptionsMenu();
+    };
+
     const addComment = index => {
       if (!newComment.value.trim()) return;
       if (!comments.value[index]) comments.value[index] = [];
@@ -193,12 +210,31 @@ export default {
     };
 
     return {
-      userPseudo, userPhoto, userBio, defaultPhoto,
-      postInput, posts, comments, newComment,
-      modalOpen, modalIndex,
-      handleLogout, triggerPostInput, handlePostFileChange,
-      openModal, closeModal, addComment, isLiked, toggleLike,
-      goToModifierProfil, followers, following
+      userPseudo,
+      userPhoto,
+      userBio,
+      defaultPhoto,
+      postInput,
+      posts,
+      comments,
+      newComment,
+      modalOpen,
+      modalIndex,
+      handleLogout,
+      triggerPostInput,
+      handlePostFileChange,
+      openModal,
+      closeModal,
+      addComment,
+      isLiked,
+      toggleLike,
+      goToModifierProfil,
+      followers,
+      following,
+      toggleOptionsMenu,
+      closeOptionsMenu,
+      optionsMenuOpen,
+      deletePost
     };
   }
 };
@@ -468,9 +504,71 @@ export default {
 
 
 .comments-header {
+  position: relative; /* obligatoire pour que le menu absolu soit relatif à ce parent */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid #ccc;
   padding-bottom: 5px;
   margin-bottom: 5px;
+}
+
+/* Bouton 3 points */
+.menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  
+}
+
+.menu-icon {
+  width: 24px;
+  height: 24px;
+  color: #000;
+  margin-left: -80px; /* décale le bouton vers la gauche */
+}
+
+.options-menu {
+  position: absolute;
+  top: 35px;           /* distance verticale depuis le bouton */
+  right: 0;            /* point d’ancrage horizontal */
+  transform: translateX(-20px); /* décalage vers la gauche de 20px */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 120px;
+}
+
+
+.menu-item {
+  padding: 10px;
+  text-align: left;
+  font-size: 0.9rem;
+  background: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background-color: #f2f2f2;
+}
+
+.menu-item.delete {
+  color: red;
+  font-weight: 600;
+  font-family: Roboto, sans-serif;
+}
+
+.menu-item.cancel {
+  color: #000;
+  font-family: Roboto, sans-serif;
 }
 
 .comments-list {
@@ -608,4 +706,5 @@ export default {
 
 
 </style>
+
 
