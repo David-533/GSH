@@ -1,7 +1,6 @@
 <template>
-  
   <div class="home-container">
-    <!-- Navbar / sidebar -->
+    <!-- Sidebar / Navbar -->
     <nav class="navbar">
       <div class="title">SOCIAL</div>
 
@@ -10,7 +9,6 @@
         <router-link to="/home" class="nav-item">Accueil</router-link>
         <router-link to="/profil" class="nav-item">Profile</router-link>
         <router-link to="/messages" class="nav-item">Messages</router-link>
-
       </div>
 
       <!-- Bouton logout -->
@@ -23,10 +21,26 @@
 
     <!-- Contenu principal -->
     <div class="home">
-      <p>Ici se trouve le fil d’actualité.</p>
+
+    </div>
+
+    <!-- Bouton flottant -->
+    <button class="floating-btn" @click="openPostModal">+</button>
+
+    <!-- Modale de création de post -->
+    <div v-if="isModalOpen" class="modal-overlay" @click.self="closePostModal">
+      <div class="modal">
+        <h2>Créer un post</h2>
+        <textarea placeholder="Écris ton post..." rows="5"></textarea>
+        <div class="modal-actions">
+          <button @click="submitPost">Publier</button>
+          <button @click="closePostModal">Annuler</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import { ref, onMounted } from "vue";
@@ -37,6 +51,7 @@ export default {
   setup() {
     const router = useRouter();
     const userPseudo = ref("");
+    const isModalOpen = ref(false);
 
     onMounted(() => {
       const pseudo = localStorage.getItem("userPseudo");
@@ -46,13 +61,21 @@ export default {
     const handleLogout = () => {
       localStorage.removeItem("userPseudo");
       localStorage.removeItem("userEmail");
-      router.push("/login"); // redirection vers Login.vue
+      router.push("/login");
     };
 
-    return { userPseudo, handleLogout };
+    const openPostModal = () => isModalOpen.value = true;
+    const closePostModal = () => isModalOpen.value = false;
+    const submitPost = () => {
+      alert("Post publié !");
+      closePostModal();
+    };
+
+    return { userPseudo, handleLogout, isModalOpen, openPostModal, closePostModal, submitPost };
   },
 };
 </script>
+
 
 <style scoped>
 .home-container {
@@ -140,5 +163,69 @@ export default {
   font-size: 2rem;
   text-align: center;
   font-family: 'Roboto', sans-serif;
+}
+/* Bouton flottant */
+.floating-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #000;
+  color: white;
+  font-size: 2rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  z-index: 1001;
+}
+
+.floating-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Modale */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1002;
+}
+
+.modal {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal textarea {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-actions button {
+  padding: 8px 15px;
+  cursor: pointer;
 }
 </style>
